@@ -7,7 +7,7 @@ import time
 import numpy as np
 from scipy.ndimage import morphology
 from progress.bar import Bar
-
+import time
 
 
 # ========== FUNCTION ===================================
@@ -50,14 +50,16 @@ def run(filename, split=2, level=4, debug=False):
 	total_height = ndpi.level_dimensions[level][1]
 	_red_sum     = 0.0
 	_total_sum   = 0.0
+	startTime    = time.time()
 
-	print "================ START ================="
-	print "LOAD {}".format(filename)
-	print "width:".ljust(20) + str(ndpi_width)
-	print "height:".ljust(20) + str(ndpi_height)
-	print "level count:".ljust(20) + str(ndpi.level_count)
-	print "split image {}x{} , level:{} , factor:{}".format(total_width,total_height,level,split)
-	
+	if debug:
+		print "================ START ================="
+		print "LOAD {}".format(filename)
+		print "width:".ljust(20) + str(ndpi_width)
+		print "height:".ljust(20) + str(ndpi_height)
+		print "level count:".ljust(20) + str(ndpi.level_count)
+		print "split image {}x{} , level:{} , factor:{}".format(total_width,total_height,level,split)
+		
 	bar = Bar('Processing', max=split**2)
 	for i in range(split):
 		for j in range(split):
@@ -82,17 +84,21 @@ def run(filename, split=2, level=4, debug=False):
 
 			if debug:
 				print "found red {} and surface {}" .format(_red_sum, _total_sum)
-
-			bar.next()
+				bar.next()
 
 			
 			# print "white:{}% black{}%".format(results["white"], results["black"])
 
 
-	bar.finish()
-	print "total red :".ljust(20) + str(_red_sum)
-	print "total surface:".ljust(20) + str(_total_sum)
-	print "Red percent:".ljust(20) + str(_red_sum / _total_sum * 100)
+	
+	if debug:
+		bar.finish()
+		print "Finished....in {:.2f} sec".format(time.time() - startTime)
+		print "total red :".ljust(20) + str(_red_sum)
+		print "total surface:".ljust(20) + str(_total_sum)
+		print "Red percent:".ljust(20) + str(_red_sum / _total_sum * 100)
+
+	return {"red":_red_sum,"total": _total_sum}
 
 
 
@@ -102,17 +108,14 @@ def run(filename, split=2, level=4, debug=False):
 # ========== Main ===================================
 
 # Settings arguments parser 
-parser = ArgumentParser(description="compute a ndpi file")
-parser.add_argument("filename")
-parser.add_argument("-s", "--split", default=2,  type=int)
-parser.add_argument("-l", "--level", default=4,  type=int)
-parser.add_argument("-d", "--debug", default=False,  type=bool)
-
-args = parser.parse_args()
-
-
-
 if __name__ == '__main__':
+	parser = ArgumentParser(description="compute a ndpi file")
+	parser.add_argument("filename")
+	parser.add_argument("-s", "--split", default=2,  type=int)
+	parser.add_argument("-l", "--level", default=4,  type=int)
+	parser.add_argument("-d", "--debug", default=False,  type=bool)
+
+	args = parser.parse_args()
 	run(args.filename, args.split, args.level, args.debug)
 
 
