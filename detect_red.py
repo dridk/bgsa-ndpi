@@ -40,6 +40,64 @@ def get_surface(source):
 	return img
 
 
+def run(filename, split=2, level=4, debug=False):
+
+# Create OpenSlide object
+	ndpi         = OpenSlide(filename)
+	ndpi_width   = ndpi.dimensions[0]
+	ndpi_height  = ndpi.dimensions[1]
+	total_width  = ndpi.level_dimensions[level][0]
+	total_height = ndpi.level_dimensions[level][1]
+	_red_sum     = 0.0
+	_total_sum   = 0.0
+
+	print "================ START ================="
+	print "LOAD {}".format(filename)
+	print "width:".ljust(20) + str(ndpi_width)
+	print "height:".ljust(20) + str(ndpi_height)
+	print "level count:".ljust(20) + str(ndpi.level_count)
+	print "split image {}x{} , level:{} , factor:{}".format(total_width,total_height,level,split)
+	
+	bar = Bar('Processing', max=split**2)
+	for i in range(split):
+		for j in range(split):
+			x     = i * ndpi_width / split
+			y     = j * ndpi_height / split
+			w     = total_width / split
+			h     = total_height / split
+
+			if debug:
+				print "\n>SLICE [{}][{}]".format(i,j)
+				print "x:{:3} y:{:3} w:{:3}px h:{:3}px:".format(x,y,w,h)
+
+			region  = ndpi.read_region((x,y), level, (w, h))
+			
+			red     = get_red(region)
+			surface = get_surface(region)
+
+			# Little hack.. because red, return 3 pixels... 
+
+			_red_sum   += red.histogram()[-1]
+			_total_sum += surface.histogram()[-1]
+
+			if debug:
+				print "found red {} and surface {}" .format(_red_sum, _total_sum)
+
+			bar.next()
+
+			
+			# print "white:{}% black{}%".format(results["white"], results["black"])
+
+
+	bar.finish()
+	print "total red :".ljust(20) + str(_red_sum)
+	print "total surface:".ljust(20) + str(_total_sum)
+	print "Red percent:".ljust(20) + str(_red_sum / _total_sum * 100)
+
+
+
+
+
 
 # ========== Main ===================================
 
@@ -52,66 +110,9 @@ parser.add_argument("-d", "--debug", default=False,  type=bool)
 
 args = parser.parse_args()
 
-splitFactor = args.split
-level       = args.level
-debug       = args.debug
 
 
-# Create OpenSlide object
-
-ndpi        = OpenSlide(args.filename)
-ndpi_width  = ndpi.dimensions[0]
-ndpi_height = ndpi.dimensions[1]
-
-print "================ START ================="
-print "LOAD {}".format(args.filename)
-print "width:".ljust(20) + str(ndpi_width)
-print "height:".ljust(20) + str(ndpi_height)
-print "level count:".ljust(20) + str(ndpi.level_count)
-
-
-_red_sum    = 0.0
-_total_sum  = 0.0
-
-total_width  = ndpi.level_dimensions[level][0]
-total_height = ndpi.level_dimensions[level][1]
-print "split image {}x{} , level:{} , factor:{}".format(total_width,total_height,level,splitFactor)
-bar = Bar('Processing', max=splitFactor**2)
-for i in range(splitFactor):
-	for j in range(splitFactor):
-		x     = i * ndpi_width / splitFactor
-		y     = j * ndpi_height / splitFactor
-		w     = total_width / splitFactor
-		h     = total_height / splitFactor
-
-		if debug:
-			print "\n>SLICE [{}][{}]".format(i,j)
-			print "x:{:3} y:{:3} w:{:3}px h:{:3}px:".format(x,y,w,h)
-
-		region  = ndpi.read_region((x,y), level, (w, h))
-		
-		red     = get_red(region)
-		surface = get_surface(region)
-
-		# Little hack.. because red, return 3 pixels... 
-
-		_red_sum   += red.histogram()[-1]
-		_total_sum += surface.histogram()[-1]
-
-		if debug:
-			print "found red {} and surface {}" .format(_red_sum, _total_sum)
-
-		bar.next()
-
-		
-		# print "white:{}% black{}%".format(results["white"], results["black"])
-
-
-bar.finish()
-print "total red :".ljust(20) + str(_red_sum)
-print "total surface:".ljust(20) + str(_total_sum)
-print "Red percent:".ljust(20) + str(_red_sum / _total_sum * 100)
-
-
+if __name__ == '__main__':
+	run(args.filename, args.split, args.level, args.debug)
 
 
