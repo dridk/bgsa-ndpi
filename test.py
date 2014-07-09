@@ -48,3 +48,5 @@ for level in levelRange:
 
 print bigdata
 bar_chart.render_in_browser();
+bar_chart.render_to_png("stat.png");
+bar_chart.render_to_file("stat.svg");

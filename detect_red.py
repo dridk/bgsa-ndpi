@@ -8,7 +8,7 @@ import numpy as np
 from scipy.ndimage import morphology
 from progress.bar import Bar
 import time
-
+import os
 
 # ========== FUNCTION ===================================
 
@@ -77,6 +77,10 @@ def run(filename, split=2, level=4, debug=False):
 			red     = get_red(region)
 			surface = get_surface(region)
 
+			region.save("output/normal_slice{}{}.png".format(i,j))
+			red.save("output/red_slice_{}{}.png".format(i,j))
+			surface.save("output/total_slice_{}{}.png".format(i,j))
+
 			# Little hack.. because red, return 3 pixels... 
 
 			_red_sum   += red.histogram()[-1]
@@ -113,9 +117,16 @@ if __name__ == '__main__':
 	parser.add_argument("filename")
 	parser.add_argument("-s", "--split", default=2,  type=int)
 	parser.add_argument("-l", "--level", default=4,  type=int)
+	#parser.add_argument("-t", "--target", default="output",  type=int)
 	parser.add_argument("-d", "--debug", default=False,  type=bool)
 
 	args = parser.parse_args()
+	
+	try:
+		os.mkdir("output")
+	except:
+		print("output already exists")
+
 	run(args.filename, args.split, args.level, args.debug)
 
 
