@@ -1,3 +1,23 @@
+ #!/usr/bin/python
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ #the Free Software Foundation, either version 3 of the License, or
+ #(at your option) any later version.
+
+ #This program is distributed in the hope that it will be useful,
+ #but WITHOUT ANY WARRANTY; without even the implied warranty of
+ #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ #GNU General Public License for more details.
+
+ #You should have received a copy of the GNU General Public License
+ #along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+__author__ = 'Sacha Schutz'
+__version__ = (1, 2, 0)
+__license__ = 'GPL3'
+
+
+
 from openslide import *
 from argparse import ArgumentParser
 import ImageEnhance
@@ -12,16 +32,45 @@ import time
 import os
 
 # ========== FUNCTION ===================================
+def shift_hue_saturation(image, hue = -90, saturation = 0.65):
+	""" Rotate hue and set the contrast""" 
+	ld = image.load()
+	width, height = image.size
+	for y in range(height):
+		for x in range(width):
+			r,g,b = ld[x,y]
+			h,s,v = colorsys.rgb_to_hsv(r/255., g/255., b/255.)
+			h = (h + hue/360.0) % 1.0
+			s = s**saturation
+			r,g,b = colorsys.hsv_to_rgb(h, s, v)
+			ld[x,y] = (int(r * 255.9999), int(g * 255.9999), int(b * 255.9999))
+	return image
+
+
 
 def get_red(source, brightness=0.06, contrast = 500):
 	""" Return Red composante""" 
-	image = source.convert("YCbCr")
-	red   = image.split()[2];
-	redBrighness = ImageEnhance.Brightness(red)
-	red          = redBrighness.enhance(0.06)
-	redContrast  = ImageEnhance.Contrast(red)
-	red          = redContrast.enhance(500)
-	return red
+	image        = source.convert("YCbCr")
+	layer        = image.split()[2];
+	brightness   = ImageEnhance.Brightness(layer)
+	layer        = brightness.enhance(0.06)
+	contrast     = ImageEnhance.Contrast(layer)
+	layer        = redContrast.enhance(500)
+	return layer
+
+def get_brown(source,brightness=0.06, contrast = 500, hue=-90, saturation=0.65):
+	""" Return Brown composante""" 
+	image        = source
+	shift_hue_saturation(image,hue,saturation)
+	image        = image.convert("YCbCr")
+	layer        = image.split()[2];
+	brightness   = ImageEnhance.Brightness(layer)
+	layer        = brightness.enhance(0.02)
+	contrast     = ImageEnhance.Contrast(layer)
+	layer        = contrast.enhance(500)	
+	return layer
+
+
 
 def get_surface(source):
 	"""Return Image Surface """
@@ -39,24 +88,6 @@ def get_surface(source):
 	img          = Image.fromarray(np.uint8(ndarray*255))
 	img          = img.convert("1")
 	return img
-
-
-def shift_hue_saturation(image, hue = -90, saturation = 0.65):
-
-	ld = image.load()
-	width, height = image.size
-	for y in range(height):
-		for x in range(width):
-			r,g,b = ld[x,y]
-			h,s,v = colorsys.rgb_to_hsv(r/255., g/255., b/255.)
-			h = (h + hue/360.0) % 1.0
-			s = s**saturation
-			r,g,b = colorsys.hsv_to_rgb(h, s, v)
-			ld[x,y] = (int(r * 255.9999), int(g * 255.9999), int(b * 255.9999))
-	return image
-
-
-
 
 
 def run(filename, split=2, level=4, debug=False):
