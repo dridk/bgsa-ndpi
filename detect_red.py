@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 import ImageEnhance
 import ImageOps
 import ImageStat
+import colorsys
 import time
 import numpy as np
 from scipy.ndimage import morphology
@@ -38,6 +39,24 @@ def get_surface(source):
 	img          = Image.fromarray(np.uint8(ndarray*255))
 	img          = img.convert("1")
 	return img
+
+
+def shift_hue_saturation(image, hue = -90, saturation = 0.65):
+
+	ld = image.load()
+	width, height = image.size
+	for y in range(height):
+		for x in range(width):
+			r,g,b = ld[x,y]
+			h,s,v = colorsys.rgb_to_hsv(r/255., g/255., b/255.)
+			h = (h + hue/360.0) % 1.0
+			s = s**saturation
+			r,g,b = colorsys.hsv_to_rgb(h, s, v)
+			ld[x,y] = (int(r * 255.9999), int(g * 255.9999), int(b * 255.9999))
+	return image
+
+
+
 
 
 def run(filename, split=2, level=4, debug=False):
