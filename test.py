@@ -1,9 +1,17 @@
 import bgsa
 import Image 
+from scipy.misc import *
+import numpy as np
+import matplotlib 
+
+def vect(a):
+	return a
+	
 
 img = Image.open("calibration/gland_89_9.jpg")
 
-img.show()
+img = matplotlib.colors.rgb_to_hsv(img)
 
-bgsa.get_red(img).show()
-bgsa.get_brown(img).show()
+
+
+

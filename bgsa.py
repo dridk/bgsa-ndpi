@@ -17,16 +17,14 @@ __version__ = (1, 2, 0)
 __license__ = 'GPL3'
 
 
-
 from openslide import *
 from argparse import ArgumentParser
-import colorsys
 from scipy.misc import *
-
-import time
-import numpy as np
 from scipy.ndimage import morphology
 from progress.bar import Bar
+import colorsys
+import time
+import numpy as np
 import time
 import os
 
@@ -70,11 +68,10 @@ def get_red(source, brightness=-150, contrast = 500):
 	layer 		 = shift_brightness_contrast(layer,brightness,contrast)
 	return layer
 
-def get_brown(source,brightness=-100, contrast = 500, hue=-90, saturation=0.65):
+def get_brown(source,brightness=-100  , contrast = 500, hue=-90, saturation=0.65):
 	""" Return Brown composante""" 
 	image        = source
 	image        = shift_hue_saturation(image,hue,saturation)
-	image.show()
 	image        = image.convert("YCbCr")
 	layer        = image.split()[2];
 	layer        = shift_brightness_contrast(layer,brightness,contrast)
