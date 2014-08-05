@@ -30,7 +30,7 @@ class Editor(QWidget):
 
 	def analyse(self, value=1):
 		img = Image.open(self.filename)
-		img = bgsa.get_red(img, -value*10)
+		img = bgsa.get_brown(img, -value*10)
 
 		# image = img.copy(0,0, img.width(), img.height())
 		img = ImageQt.ImageQt(img).copy()
@@ -54,7 +54,10 @@ class Editor(QWidget):
 app = QApplication(sys.argv)
 
 e = Editor()
-e.loadImage("normal_slice11.png")
+
+
+
+e.loadImage("normal_slice01.png")
 e.show()
 
 

@@ -29,19 +29,18 @@ def run(filename, split, level, dred, dbrown, debug):
 	total_height = ndpi.level_dimensions[level][1]
 	
 	red_sum     = 0.0
+	brown_sum   = 0.0
+	surface_sum = 0.0
 
 	startTime    = time.time()
 
-
-	print "filename: {}".format(filename)
-	print "split: {}".format(split)
-	print "level: {}".format(level)
-	print "dred: {}".format(dred)
-	print "dbrown: {}".format(dbrown)
-	print "debug: {}".format(debug)
-
-
-
+	if debug:
+		print "filename: {}".format(filename)
+		print "split: {}".format(split)
+		print "level: {}".format(level)
+		print "dred: {}".format(dred)
+		print "dbrown: {}".format(dbrown)
+		print "debug: {}".format(debug)
 
 
 	if debug:
@@ -66,16 +65,19 @@ def run(filename, split, level, dred, dbrown, debug):
 
 			region  = ndpi.read_region((x,y), level, (w, h))
 			red     = bgsa.get_red(region, brightness=-dred)
-			# brown   = get_brown(region)
+			brown   = bgsa.get_brown(region, brightness=-dbrown)
+			# surface = bgsa.get_surface(region)
 
 			region.save("output/normal_slice{}{}.png".format(i,j))
 			red.save("output/red_slice_{}{}.png".format(i,j))
-			
+			brown.save("output/brown_slice_{}{}.png".format(i,j))
+			# surface.save("output/surface_slice_{}{}.png".format(i,j))
 
-			red_sum   += bgsa.get_white_pixels(red)
+			red_sum    += bgsa.get_white_pixels(red)
+			brown_sum  += bgsa.get_white_pixels(brown)
+			# surface_sum+= bgsa.get_white_pixels(surface)
 
 			if debug:
-				print "found red: {}" .format(red_sum)
 				bar.next()
 
 			
@@ -84,9 +86,10 @@ def run(filename, split, level, dred, dbrown, debug):
 	if debug:
 		bar.finish()
 		print "Finished....in {:.2f} sec".format(time.time() - startTime)
-		print "total red :".ljust(20) + str(red_sum)
+		print "total red   :".ljust(20) + str(red_sum)
+		print "total brown :".ljust(20) + str(brown_sum)
 
-	return {"red":red_sum}
+	return {"red":red_sum, "brown":brown_sum}
 
 
 
@@ -104,7 +107,7 @@ if __name__ == '__main__':
 	parser.add_argument("-s", "--split", default=2,  type=int)
 	parser.add_argument("-z", "--zoom", default=4,  type=int)
 	parser.add_argument("-r", "--red", default=50,  type=int)
-	parser.add_argument("-b", "--brown", default=4,  type=int)
+	parser.add_argument("-b", "--brown", default=90,  type=int)
 	parser.add_argument("-d", "--debug", default=False,  type=bool)
 
 
@@ -115,8 +118,9 @@ if __name__ == '__main__':
 	except:
 		print("output already exists")
 
-	run(args.filename, args.split, args.zoom,args.red, args.brown, args.debug)
+	results = run(args.filename, args.split, args.zoom,args.red, args.brown, args.debug)
 
+	print(results)
 
 
 

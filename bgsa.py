@@ -36,7 +36,11 @@ def shift_hue_saturation(image, hue = -90, saturation = 0.65):
 	width, height = copy.size
 	for y in range(height):
 		for x in range(width):
-			r,g,b = ld[x,y]
+			pixel = ld[x,y]
+			r = pixel[0]
+			g = pixel[1]
+			b = pixel[2]
+			
 			h,s,v = colorsys.rgb_to_hsv(r/255., g/255., b/255.)
 			h = (h + hue/360.0) % 1.0
 			s = s**saturation
@@ -100,99 +104,6 @@ def get_white_pixels(source):
 	return source.histogram()[-1]
 
 
-def run(filename, split=2, level=4, dred=-50 , dbrown=100, debug=False):
 
-# Create OpenSlide object
-	ndpi         = OpenSlide(filename)
-	ndpi_width   = ndpi.dimensions[0]
-	ndpi_height  = ndpi.dimensions[1]
-	total_width  = ndpi.level_dimensions[level][0]
-	total_height = ndpi.level_dimensions[level][1]
-	_red_sum     = 0.0
-	_total_sum   = 0.0
-	startTime    = time.time()
-
-	if debug:
-		print "================ START ================="
-		print "LOAD {}".format(filename)
-		print "width:".ljust(20) + str(ndpi_width)
-		print "height:".ljust(20) + str(ndpi_height)
-		print "level count:".ljust(20) + str(ndpi.level_count)
-		print "split image {}x{} , level:{} , factor:{}".format(total_width,total_height,level,split)
-		
-	bar = Bar('Processing', max=split**2)
-	for i in range(split):
-		for j in range(split):
-			x     = i * ndpi_width / split
-			y     = j * ndpi_height / split
-			w     = total_width / split
-			h     = total_height / split
-
-			if debug:
-				print "\n>SLICE [{}][{}]".format(i,j)
-				print "x:{:3} y:{:3} w:{:3}px h:{:3}px:".format(x,y,w,h)
-
-			region  = ndpi.read_region((x,y), level, (w, h))
-			
-			#===== RED DETECTION =========
-			red     = get_red(region, brightness = dred)
-			# brown   = get_brown(region)
-			surface = get_surface(region)
-
-			region.save("output/normal_slice{}{}.png".format(i,j))
-			red.save("output/red_slice_{}{}.png".format(i,j))
-			# brown.save("output/red_slice_{}{}.png".format(i,j))
-			surface.save("output/total_slice_{}{}.png".format(i,j))
-
-			# Little hack.. because red, return 3 pixels... 
-
-			_red_sum   += red.histogram()[-1]
-			_total_sum += surface.histogram()[-1]
-
-			if debug:
-				print "found red {} and surface {}" .format(_red_sum, _total_sum)
-				bar.next()
-
-			
-			# print "white:{}% black{}%".format(results["white"], results["black"])
-
-
-	
-	if debug:
-		bar.finish()
-		print "Finished....in {:.2f} sec".format(time.time() - startTime)
-		print "total red :".ljust(20) + str(_red_sum)
-		print "total surface:".ljust(20) + str(_total_sum)
-		print "Red percent:".ljust(20) + str(_red_sum / _total_sum * 100)
-
-	return {"red":_red_sum,"total": _total_sum}
-
-
-
-
-
-
-# ========== Main ===================================
-
-# Settings arguments parser 
-if __name__ == '__main__':
-	parser = ArgumentParser(description="compute a ndpi file")
-	parser.add_argument("filename")
-	parser.add_argument("-s", "--split", default=2,  type=int, help="split level")
-	parser.add_argument("-z", "--zoom", default=4,  type=int, help="zoom level")
-	parser.add_argument("-r", "--red", default=-50,  type=int, help="red threshold")
-	parser.add_argument("-b", "--brown", default=4,  type=int, help="brown threshold")
-
-	#parser.add_argument("-t", "--target", default="output",  type=int)
-	parser.add_argument("-d", "--debug", default=False,  type=bool)
-
-	args = parser.parse_args()
-	
-	try:
-		os.mkdir("output")
-	except:
-		print("output already exists")
-
-	run(args.filename, args.split, args.level, args.debug)
 
 
