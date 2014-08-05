@@ -54,13 +54,16 @@ def calibrate(value=-150):
 
 		print "======="
 
-for i in range(150,300,10):
+for i in range(0,300,10):
 	machines = []
 	humans   = []
 	texts    = []
 	calibrate(-i)
 	pl.clf()
+	pl.ylim([0,100000])
+	pl.xlim([0,500])
 	pl.scatter(humans,machines)
+	pl.title("red {}".format(i))
 
 	# for i, txt in enumerate(texts):
 	# 	pl.annotate(txt, (humans[i],machines[i]))
