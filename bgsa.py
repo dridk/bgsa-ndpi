@@ -96,7 +96,11 @@ def get_surface(source):
 	return img
 
 
-def run(filename, split=2, level=4, debug=False):
+def get_white_pixels(source):
+	return source.histogram()[-1]
+
+
+def run(filename, split=2, level=4, dred=-50 , dbrown=100, debug=False):
 
 # Create OpenSlide object
 	ndpi         = OpenSlide(filename)
@@ -130,7 +134,8 @@ def run(filename, split=2, level=4, debug=False):
 
 			region  = ndpi.read_region((x,y), level, (w, h))
 			
-			red     = get_red(region)
+			#===== RED DETECTION =========
+			red     = get_red(region, brightness = dred)
 			# brown   = get_brown(region)
 			surface = get_surface(region)
 
@@ -173,8 +178,11 @@ def run(filename, split=2, level=4, debug=False):
 if __name__ == '__main__':
 	parser = ArgumentParser(description="compute a ndpi file")
 	parser.add_argument("filename")
-	parser.add_argument("-s", "--split", default=2,  type=int)
-	parser.add_argument("-l", "--level", default=4,  type=int)
+	parser.add_argument("-s", "--split", default=2,  type=int, help="split level")
+	parser.add_argument("-z", "--zoom", default=4,  type=int, help="zoom level")
+	parser.add_argument("-r", "--red", default=-50,  type=int, help="red threshold")
+	parser.add_argument("-b", "--brown", default=4,  type=int, help="brown threshold")
+
 	#parser.add_argument("-t", "--target", default="output",  type=int)
 	parser.add_argument("-d", "--debug", default=False,  type=bool)
 

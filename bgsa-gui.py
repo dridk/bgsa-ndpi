@@ -12,7 +12,7 @@ class Editor(QWidget):
 		self.transformPix 	= QLabel("transformed");
 		self.spinbox       	= QSpinBox()
 		self.button         = QPushButton("test")
-		layout 			    = QVBoxLayout()
+		layout 			    = QHBoxLayout()
 
 		layout.addWidget(self.originalPix)
 		layout.addWidget(self.transformPix)
@@ -26,7 +26,7 @@ class Editor(QWidget):
 
 	def loadImage(self, filename):
 		self.filename = filename
-		# self.originalPix.setPixmap(QPixmap(filename).scaledToWidth(500))
+		self.originalPix.setPixmap(QPixmap(filename))
 
 	def analyse(self, value=1):
 		img = Image.open(self.filename)
@@ -37,7 +37,7 @@ class Editor(QWidget):
 		pix = QPixmap.fromImage(img)
 		
 
-		self.originalPix.setPixmap(pix)
+		self.transformPix.setPixmap(pix)
 
 
 
@@ -54,7 +54,7 @@ class Editor(QWidget):
 app = QApplication(sys.argv)
 
 e = Editor()
-e.loadImage("calibration/gland_89_0.jpg")
+e.loadImage("normal_slice11.png")
 e.show()
 
 
